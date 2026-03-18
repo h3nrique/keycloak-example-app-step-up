@@ -1,59 +1,99 @@
-# LoaApp
+# Step-Up Authentication with Keycloak
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.2.
+This project demonstrates **Step-Up Authentication** using [Keycloak](https://www.keycloak.org/) and Angular. It showcases how to enforce different Authentication Assurance Levels (AAL) — from password-only (AAL1) up to passkey/WebAuthn (AAL3) — using Keycloak's Level of Assurance (LoA) feature.
 
-## Development server
+Three separate Angular app instances are served, each requiring a different authentication level:
 
-To start a local development server, run:
+| App     | Port   | Required AAL | Authentication method           |
+|---------|--------|--------------|---------------------------------|
+| AAL1    | 8180   | AAL1         | Password only                   |
+| AAL2    | 8280   | AAL2         | Password + OTP (TOTP)           |
+| AAL3    | 8380   | AAL3         | Passkey (WebAuthn passwordless) |
+
+---
+
+## Prerequisites
+
+- [Podman](https://podman.io/get-started)
+- Access to the Red Hat container registry (`registry.redhat.io`) — log in with `podman login registry.redhat.io` if needed
+
+---
+
+## Running the stack
 
 ```bash
+podman compose up --build
+```
+
+This will start:
+- **Keycloak** at `http://localhost:8080` (admin: `admin` / `admin`), pre-configured with the `example` realm and user `otto` (password: `otto`)
+- **AAL1 app** at `http://localhost:8180`
+- **AAL2 app** at `http://localhost:8280`
+- **AAL3 app** at `http://localhost:8380`
+
+---
+
+## First-time user setup
+
+The user `otto` is pre-created but requires two credentials to be configured before accessing AAL2 and AAL3 apps: an **OTP authenticator** and a **passkey**.
+
+These actions are triggered automatically when `otto` first logs in.
+
+### 1. Configure OTP (required for AAL2)
+
+1. Open `http://localhost:8280` and click **Login**.
+2. Enter credentials: username `otto`, password `otto`.
+3. Keycloak will prompt you to **set up an authenticator app** (TOTP).
+4. Scan the QR code with an authenticator app (e.g. Google Authenticator, Aegis, or FreeOTP).
+5. Enter the generated one-time code and click **Submit**.
+
+OTP is now configured. You can access the AAL2 app normally on subsequent logins.
+
+### 2. Configure Passkey (required for AAL3)
+
+1. Open `http://localhost:8380` and click **Login**.
+2. Enter credentials: username `otto`, password `otto`, then the OTP code if prompted.
+3. Keycloak will prompt you to **register a passkey** (WebAuthn passwordless).
+4. Follow your browser's prompt to register a passkey (e.g. Touch ID, Windows Hello, or a hardware security key).
+5. Complete the registration and confirm.
+
+Passkey is now configured. The AAL3 app will use the registered passkey for authentication on subsequent logins.
+
+> **Note:** Both setup steps can also be triggered from `http://localhost:8180` (AAL1 app). On first login, Keycloak will walk you through configuring both credentials sequentially.
+
+---
+
+## Keycloak admin console
+
+Access the admin console at `http://localhost:8080` with credentials `admin` / `admin`.
+
+The `example` realm is pre-imported with:
+- Clients: `aal1-app`, `aal2-app`, `aal3-app` — each mapped to the corresponding LoA level
+- User: `otto` — password `otto`, OTP and passkey setup required on first login
+
+---
+
+## Development
+
+To run the Angular app locally (outside Podman):
+
+```bash
+npm install
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+The app will be available at `http://localhost:4200/`. Update `src/assets/config/config.json` to point to the desired Keycloak realm and client.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+### Build
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Build artifacts are output to the `dist/` directory.
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+### Unit tests
 
 ```bash
 ng test
 ```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
