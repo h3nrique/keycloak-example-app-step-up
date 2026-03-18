@@ -1,0 +1,39 @@
+services:
+
+  keycloak:
+    image: registry.redhat.io/rhbk/keycloak-rhel9:26.4-12
+    command:
+      - start-dev
+      - --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+    ports:
+      - 8080:8080
+    volumes:
+      - ./example-realm.json:/opt/keycloak/data/import/example-realm.json
+
+  aal1-app:
+    image: loa-app:latest
+    build: .
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./aal1-config.json:/opt/app-root/src/config/config.json
+
+  aal2-app:
+    image: loa-app:latest
+    build: .
+    ports:
+      - "8280:8080"
+    volumes:
+      - ./aal2-config.json:/opt/app-root/src/config/config.json
+
+  aal3-app:
+    image: loa-app:latest
+    build: .
+    ports:
+      - "8380:8080"
+    volumes:
+      - ./aal3-config.json:/opt/app-root/src/config/config.json
+

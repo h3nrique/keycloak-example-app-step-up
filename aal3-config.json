@@ -1,0 +1,9 @@
+{
+    "authConfig": {
+        "url": "http://localhost:8080",
+        "realm": "example",
+        "clientId": "aal3-app"
+    },
+    "api": "http://localhost:8480",
+    "loa": "3"
+}
