@@ -24,7 +24,8 @@ export const appConfig = (config: any): ApplicationConfig => {
         config: {
           url: config.authConfig.url,
           realm: config.authConfig.realm,
-          clientId: config.authConfig.clientId
+          clientId: config.authConfig.clientId,
+          ...(config.authConfig.clientSecret && { clientSecret: config.authConfig.clientSecret })
         },
         initOptions: {
           onLoad: 'check-sso'
